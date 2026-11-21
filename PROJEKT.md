@@ -1,0 +1,126 @@
+# Losowanie świąteczne — opis projektu
+
+> Dokument roboczy. Opisuje ustalenia, decyzje i plan pracy.
+> Aktualizowany na bieżąco. Na koniec pracy powstanie z niego `README.md`.
+
+## Cel
+
+Prosta aplikacja CLI w Pythonie do losowania świątecznego:
+każda osoba z listy losuje inną osobę, dla której przygotowuje prezent.
+
+## Zasady losowania
+
+1. Każda osoba losuje **dokładnie jedną** osobę i jest wylosowana **dokładnie raz**.
+2. Nikt nie losuje samego siebie.
+3. **Grupy zabronione:** osoby z tej samej grupy nie mogą wylosować siebie nawzajem.
+   - Osoba należy do **najwyżej jednej** grupy (pole może być puste = brak ograniczeń).
+4. **Pary wzajemne** (A → B i jednocześnie B → A) — dozwolone domyślnie,
+   można je zablokować parametrem przy uruchomieniu.
+5. Wynik **nie musi** tworzyć jednego łańcucha — dopuszczalne jest kilka zamkniętych cykli
+   (np. A → B → C → A oraz D → E → D).
+6. Losowanie używa **seeda**: domyślnie generowanego losowo, zawsze zapisywanego w pliku wyników.
+   Dzięki temu każde losowanie można odtworzyć.
+
+## Pliki
+
+Wszystkie pliki: **CSV**, separator `;`, kodowanie UTF-8
+(odczyt jako `utf-8-sig`, żeby poprawnie obsłużyć pliki z Excela zapisane z BOM).
+
+### Lista osób (wejście)
+
+```csv
+Imię i nazwisko;Telefon;Grupa
+Anna Kowalska;600111222;Kowalscy
+Piotr Kowalski;600333444;Kowalscy
+Ewa Nowak;600555666;
+```
+
+- `Imię i nazwisko` — **unikalny identyfikator** osoby; duplikat = błąd pliku.
+- `Telefon` — przechowywany jako tekst (zachowuje `+48`, zera na początku).
+- `Grupa` — opcjonalna; pusta = brak ograniczeń.
+
+### Wyniki (wyjście)
+
+```csv
+# seed: 2840193377
+# pary_wzajemne: dozwolone
+Losujący;Telefon;Wylosowana osoba
+Anna Kowalska;600111222;Ewa Nowak
+Piotr Kowalski;600333444;Anna Kowalska
+Ewa Nowak;600555666;Piotr Kowalski
+```
+
+- Linie zaczynające się od `#` to metadane losowania (seed, ustawienie par wzajemnych).
+- Uwaga: plik zawiera wszystkie pary — kto go otworzy, zna wyniki.
+
+## Interfejs CLI
+
+```bash
+# losowanie
+python -m secret_santa losuj lista.csv -o wyniki.csv [--bez-par-wzajemnych] [--seed 123]
+
+# weryfikacja istniejących wyników
+python -m secret_santa sprawdz lista.csv wyniki.csv
+```
+
+`sprawdz` weryfikuje, czy:
+- każda osoba z listy losuje dokładnie raz i jest wylosowana dokładnie raz,
+- nikt nie wylosował siebie,
+- nikt nie wylosował osoby ze swojej grupy,
+- nie ma par wzajemnych (jeśli metadane wyników mówią, że były zablokowane),
+- w wynikach nie występują osoby spoza listy.
+
+Wypisuje listę problemów albo `OK`. Ta sama logika służy do testowania algorytmu.
+
+## Decyzje techniczne
+
+- Python 3.13, **tylko biblioteka standardowa** (`csv`, `argparse`, `random`, `dataclasses`, `unittest`).
+- Kod (nazwy, identyfikatory) **po angielsku**; komunikaty dla użytkownika i komendy CLI po polsku.
+- Algorytm losowania to **czysta funkcja** — nie wie nic o plikach; dostaje osoby, zwraca pary.
+- Seed: `random.Random(seed)` — własna instancja generatora, nie globalny `random`.
+
+## Planowana struktura
+
+```
+losowanie_swiateczne/
+  secret_santa/
+    __main__.py    # punkt wejścia: python -m secret_santa
+    models.py      # dataclass Person
+    reader.py      # odczyt listy osób i wyników z CSV + walidacja
+    writer.py      # zapis wyników do CSV
+    draw.py        # algorytm losowania
+    check.py       # weryfikacja wyników
+    cli.py         # argparse, spina wszystko
+  tests/
+  przyklad.csv
+  PROJEKT.md
+```
+
+## Sposób pracy
+
+- Pracujemy małymi krokami; każdy krok kończy się działającym kodem i commitem.
+- Dla każdego kroku: najpierw ustalamy interfejs (sygnatury, odpowiedzialność),
+  potem **kod pisze autor**, Claude pomaga, gdy trzeba, a na końcu proponuje refaktor.
+- Git obsługuje autor; Claude sugeruje krótkie commit message po angielsku.
+
+## Plan
+
+- [ ] 1. Szkielet projektu, `.gitignore`, przykładowy `przyklad.csv`
+- [ ] 2. Model danych `Person`
+- [ ] 3. Odczyt listy osób z CSV + walidacja
+- [ ] 4. Algorytm losowania + testy
+- [ ] 5. Zapis wyników do CSV (z metadanymi)
+- [ ] 6. Weryfikacja wyników (`check.py`)
+- [ ] 7. CLI: `losuj` i `sprawdz`
+- [ ] 8. `README.md`
+
+## Na później
+
+- Powiadomienia SMS: każda osoba dostaje informację, kogo wylosowała.
+
+## Dziennik decyzji
+
+- 2026-11-21 — Lista osób w CSV zamiast xlsx → brak zewnętrznych zależności.
+- 2026-11-21 — Seed losowy, zapisywany w metadanych pliku wyników.
+- 2026-11-21 — Pary wzajemne sterowane flagą `--bez-par-wzajemnych`;
+  `sprawdz` odczytuje to ustawienie z metadanych wyników.
