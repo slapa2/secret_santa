@@ -105,8 +105,8 @@ losowanie_swiateczne/
 
 ## Plan
 
-- [ ] 1. Szkielet projektu, `.gitignore`, przykładowy `przyklad.csv`
-- [ ] 2. Model danych `Person`
+- [x] 1. Szkielet projektu, `.gitignore`, przykładowy `przyklad.csv`
+- [x] 2. Model danych `Person`
 - [ ] 3. Odczyt listy osób z CSV + walidacja
 - [ ] 4. Algorytm losowania + testy
 - [ ] 5. Zapis wyników do CSV (z metadanymi)
