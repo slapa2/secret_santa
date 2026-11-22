@@ -141,7 +141,7 @@ losowanie_swiateczne/
 - [x] 2. Model danych `Person`
 - [x] 3. Odczyt listy osób z CSV + walidacja + testy (`tests/test_reader.py`)
 - [x] 4. Weryfikacja wyników (`check.py`) + testy
-- [ ] 5. Walidacja przed losowaniem + algorytm losowania (`draw.py`) + testy
+- [x] 5. Walidacja przed losowaniem + algorytm losowania (`draw.py`) + testy
 - [ ] 6. Zapis wyników do CSV (z metadanymi)
 - [ ] 7. CLI: `draw` i `check`
 - [ ] 8. `README.md`
