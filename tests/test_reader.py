@@ -97,4 +97,3 @@ class ReadPeopleTest(unittest.TestCase):
     def test_header_only_returns_empty_list(self):
         people = self.read(HEADER + "\n")
         self.assertEqual(people, [])
-
