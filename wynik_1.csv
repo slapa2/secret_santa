@@ -1,0 +1,10 @@
+﻿# seed: 579349356
+# allow_mutual: true
+Losujący;Telefon;Wylosowana osoba
+Anna Kowalska;600111222;Marek Wiśniewski
+Piotr Kowalski;600333444;Ewa Nowak
+Zosia Kowalska;600777888;Jan Nowak
+Ewa Nowak;600555666;Anna Kowalska
+Jan Nowak;600999000;Kasia Zielińska
+Marek Wiśniewski;601222333;Piotr Kowalski
+Kasia Zielińska;601444555;Zosia Kowalska

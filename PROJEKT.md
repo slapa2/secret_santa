@@ -64,11 +64,17 @@ Ewa Nowak;600555666;Piotr Kowalski
 
 ```bash
 # losowanie
-python -m secret_santa draw lista.csv wyniki.csv [--no-mutual-pairs] [--seed 123]
+python -m secret_santa draw lista.csv wyniki.csv [--no-mutual-pairs] [--seed 123] [--force]
 
 # weryfikacja istniejących wyników
 python -m secret_santa check lista.csv wyniki.csv
 ```
+
+`draw`:
+- seed losowy (`random.randrange(2**32)`), chyba że podano `--seed`; zawsze wypisywany i zapisywany w pliku,
+- **odmawia nadpisania** istniejącego pliku wyników; nadpisanie tylko z `--force`.
+
+Błędy (`ValueError` i pochodne, `TooManyAttemptsError`) — sam komunikat, bez tracebacku, kod wyjścia 1.
 
 `check` weryfikuje, czy:
 - każda osoba z listy losuje dokładnie raz i jest wylosowana dokładnie raz,
@@ -163,7 +169,7 @@ losowanie_swiateczne/
 - [x] 4. Weryfikacja wyników (`check.py`) + testy
 - [x] 5. Walidacja przed losowaniem + algorytm losowania (`draw.py`) + testy
 - [x] 6. Zapis i odczyt wyników CSV (z metadanymi) + testy w obie strony
-- [ ] 7. CLI: `draw` i `check`
+- [x] 7. CLI: `draw` i `check` (działa end-to-end; brak testów CLI)
 - [ ] 8. `README.md`
 
 ## Na później
@@ -176,11 +182,16 @@ losowanie_swiateczne/
   (błąd i tak wychwyci `validate_pairs`, ale z mniej precyzyjnym komunikatem).
 - Brak testów błędów dla `read_results` (`ReadResultsTest` w `tests/test_reader.py`).
 - `read_results` nie sprawdza nagłówka kolumn w pliku wyników.
+- Brak testów integracyjnych CLI (`draw` → plik → `check`).
+- Kosmetyka CLI: puste `help` dla `draw`, „override” → „overwrite” w komunikacie,
+  zbędne `Path(...)` w `run_draw` (argparse już daje `Path`).
 
 ## Dziennik decyzji
 
 - 2026-11-21 — Lista osób w CSV zamiast xlsx → brak zewnętrznych zależności.
 - 2026-11-21 — Seed losowy, zapisywany w metadanych pliku wyników.
+- 2026-11-22 — `draw` nie nadpisuje istniejącego pliku wyników bez `--force`
+  (ochrona przed zniszczeniem losowania, które ludzie już znają).
 - 2026-11-22 — `draw` przyjmuje dwa argumenty pozycyjne (lista, wyniki) — symetrycznie z `check`;
   bez `-o` i bez domyślnej nazwy pliku — użytkownik zawsze świadomie wskazuje plik wyników.
 - 2026-11-22 — Wynik losowania jako `DrawResult` (pary + seed + allow_mutual); ścieżka poza nim.
