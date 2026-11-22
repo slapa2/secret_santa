@@ -1,8 +1,8 @@
 from pathlib import Path
 import csv
 
-from .models import Person
-
+from .models import Person, DrawResult
+from .writer import GIVER_NAME_COLUMN, RECEIVER_NAME_COLUMN
 
 
 NAME_COLUMN = "imię i nazwisko"
@@ -59,3 +59,36 @@ def read_people(path: Path) -> list[Person]:
                 )
             )
     return persons
+
+
+def read_results(path: Path, people: list[Person]) -> DrawResult:
+
+    person_dict = {person.name: person for person in people}
+
+    with open(path, mode="r", encoding='utf-8-sig', newline="") as f:
+
+        # seed
+        key, _, value = f.readline().lstrip("# ").partition(":")
+        if key != 'seed':
+            raise ValueError("Missing metadata: seed")
+        seed = int(value.strip())
+
+        # allow_mutual
+        key, _, value = f.readline().lstrip("# ").partition(":")
+        if key != 'allow_mutual':
+            raise ValueError("Missing metadata: allow_mutual")
+        allow_mutual = value.strip().lower() == "true"
+
+        reader = csv.DictReader(f, delimiter=";")
+        row_results = list(reader)
+
+    pairs = {}
+    for row in row_results:
+        giver = row.get(GIVER_NAME_COLUMN)
+        receiver = row.get(RECEIVER_NAME_COLUMN)
+        pairs[person_dict.get(giver)] = person_dict.get(receiver)
+
+    return DrawResult(pairs=pairs, seed=seed, allow_mutual=allow_mutual)
+
+
+

@@ -162,13 +162,20 @@ losowanie_swiateczne/
 - [x] 3. Odczyt listy osób z CSV + walidacja + testy (`tests/test_reader.py`)
 - [x] 4. Weryfikacja wyników (`check.py`) + testy
 - [x] 5. Walidacja przed losowaniem + algorytm losowania (`draw.py`) + testy
-- [ ] 6. Zapis wyników do CSV (z metadanymi)
+- [x] 6. Zapis i odczyt wyników CSV (z metadanymi) + testy w obie strony
 - [ ] 7. CLI: `draw` i `check`
 - [ ] 8. `README.md`
 
 ## Na później
 
 - Powiadomienia SMS: każda osoba dostaje informację, kogo wylosowała.
+
+### Dług techniczny (świadomie odłożone)
+
+- `read_results` nie wykrywa nieznanych imion ani powtórzonego losującego
+  (błąd i tak wychwyci `validate_pairs`, ale z mniej precyzyjnym komunikatem).
+- Brak testów błędów dla `read_results` (`ReadResultsTest` w `tests/test_reader.py`).
+- `read_results` nie sprawdza nagłówka kolumn w pliku wyników.
 
 ## Dziennik decyzji
 

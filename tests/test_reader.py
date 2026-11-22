@@ -7,7 +7,6 @@ from secret_santa.models import Person
 
 HEADER = "Imię i nazwisko;Telefon;Grupa\n"
 
-
 class ReadPeopleTest(unittest.TestCase):
 
     def setUp(self):
