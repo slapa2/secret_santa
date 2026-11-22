@@ -46,21 +46,25 @@ Ewa Nowak;600555666;
 
 ```csv
 # seed: 2840193377
-# pary_wzajemne: dozwolone
+# allow_mutual: false
 Losujący;Telefon;Wylosowana osoba
 Anna Kowalska;600111222;Ewa Nowak
 Piotr Kowalski;600333444;Anna Kowalska
 Ewa Nowak;600555666;Piotr Kowalski
 ```
 
-- Linie zaczynające się od `#` to metadane losowania (seed, ustawienie par wzajemnych).
+- Linie zaczynające się od `#` to metadane losowania (`seed`, `allow_mutual`: `true`/`false`)
+  — po angielsku, czytane głównie przez program.
+- Nagłówki kolumn po polsku — plik czytają ludzie.
+- Końce linii `\n` w całym pliku; kodowanie `utf-8-sig` (BOM — Excel poprawnie pokaże polskie znaki).
+- Kolejność wierszy = kolejność osób w pliku wejściowym.
 - Uwaga: plik zawiera wszystkie pary — kto go otworzy, zna wyniki.
 
 ## Interfejs CLI
 
 ```bash
 # losowanie
-python -m secret_santa draw lista.csv -o wyniki.csv [--no-mutual-pairs] [--seed 123]
+python -m secret_santa draw lista.csv wyniki.csv [--no-mutual-pairs] [--seed 123]
 
 # weryfikacja istniejących wyników
 python -m secret_santa check lista.csv wyniki.csv
@@ -108,8 +112,24 @@ class InvalidDrawError(ValueError): ...
 def validate_pairs(people: list[Person], pairs: dict[Person, Person], allow_mutual: bool) -> None
 
 # draw.py
-def draw(people: list[Person], rng: random.Random, allow_mutual: bool) -> dict[Person, Person]
+class ImpossibleDrawError(ValueError): ...
+class TooManyAttemptsError(Exception): ...
+def validate_feasibility(people: list[Person], allow_mutual: bool) -> None
+def draw(people: list[Person], rng: random.Random, allow_mutual: bool, max_attempts: int = 1000) -> dict[Person, Person]
+
+# models.py
+@dataclass(frozen=True)
+class DrawResult:
+    pairs: dict[Person, Person]
+    seed: int
+    allow_mutual: bool
+
+# writer.py / reader.py — ścieżka zawsze do pliku, obowiązkowa
+def write_results(path: Path, result: DrawResult) -> None
+def read_results(path: Path, people: list[Person]) -> DrawResult
 ```
+
+Ścieżki plików pojawiają się tylko w CLI; reszta kodu dostaje gotowe dane.
 
 ## Planowana struktura
 
@@ -154,6 +174,10 @@ losowanie_swiateczne/
 
 - 2026-11-21 — Lista osób w CSV zamiast xlsx → brak zewnętrznych zależności.
 - 2026-11-21 — Seed losowy, zapisywany w metadanych pliku wyników.
+- 2026-11-22 — `draw` przyjmuje dwa argumenty pozycyjne (lista, wyniki) — symetrycznie z `check`;
+  bez `-o` i bez domyślnej nazwy pliku — użytkownik zawsze świadomie wskazuje plik wyników.
+- 2026-11-22 — Wynik losowania jako `DrawResult` (pary + seed + allow_mutual); ścieżka poza nim.
+- 2026-11-22 — Format wyników: metadane po angielsku (`# seed`, `# allow_mutual`), nagłówki po polsku.
 - 2026-11-22 — CLI po angielsku: `draw`, `check`, `--no-mutual-pairs`.
 - 2026-11-22 — Algorytm „tasuj i sprawdzaj” + walidacja przypadków niemożliwych przed losowaniem.
 - 2026-11-22 — Najpierw `check.py`, potem `draw.py` — reguły w jednym miejscu.
