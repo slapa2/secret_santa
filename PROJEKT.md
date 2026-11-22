@@ -36,8 +36,11 @@ Ewa Nowak;600555666;
 ```
 
 - `Imię i nazwisko` — **unikalny identyfikator** osoby; duplikat = błąd pliku.
-- `Telefon` — przechowywany jako tekst (zachowuje `+48`, zera na początku).
+- `Telefon` — **wymagany**, przechowywany jako tekst (zachowuje `+48`, zera na początku).
+  Może się powtarzać (np. jeden telefon dla pary).
 - `Grupa` — opcjonalna; pusta = brak ograniczeń.
+- Nazwy kolumn bez względu na wielkość liter; spacje wokół wartości są usuwane;
+  puste wiersze są pomijane.
 
 ### Wyniki (wyjście)
 
@@ -75,7 +78,7 @@ Wypisuje listę problemów albo `OK`. Ta sama logika służy do testowania algor
 ## Decyzje techniczne
 
 - Python 3.13, **tylko biblioteka standardowa** (`csv`, `argparse`, `random`, `dataclasses`, `unittest`).
-- Kod (nazwy, identyfikatory) **po angielsku**; komunikaty dla użytkownika i komendy CLI po polsku.
+- Kod (nazwy, identyfikatory) i komunikaty błędów **po angielsku**.
 - Algorytm losowania to **czysta funkcja** — nie wie nic o plikach; dostaje osoby, zwraca pary.
 - Seed: `random.Random(seed)` — własna instancja generatora, nie globalny `random`.
 
@@ -107,7 +110,7 @@ losowanie_swiateczne/
 
 - [x] 1. Szkielet projektu, `.gitignore`, przykładowy `przyklad.csv`
 - [x] 2. Model danych `Person`
-- [ ] 3. Odczyt listy osób z CSV + walidacja
+- [x] 3. Odczyt listy osób z CSV + walidacja + testy (`tests/test_reader.py`)
 - [ ] 4. Algorytm losowania + testy
 - [ ] 5. Zapis wyników do CSV (z metadanymi)
 - [ ] 6. Weryfikacja wyników (`check.py`)
@@ -122,5 +125,8 @@ losowanie_swiateczne/
 
 - 2026-11-21 — Lista osób w CSV zamiast xlsx → brak zewnętrznych zależności.
 - 2026-11-21 — Seed losowy, zapisywany w metadanych pliku wyników.
+- 2026-11-22 — Komunikaty błędów po angielsku (testy sprawdzają ich treść).
+- 2026-11-22 — Testy w `unittest` (bez zależności); ewentualne przejście na pytest
+  nie wymaga przepisywania testów.
 - 2026-11-21 — Pary wzajemne sterowane flagą `--bez-par-wzajemnych`;
   `sprawdz` odczytuje to ustawienie z metadanych wyników.
