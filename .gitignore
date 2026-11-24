@@ -9,4 +9,5 @@ __pycache__/
 .vscode/
 
 # wyniki losowania (zawierają wszystkie pary)
-wyniki*.csv
+*.csv
+!example.csv
