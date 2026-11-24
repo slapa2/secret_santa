@@ -12,8 +12,8 @@ każda osoba z listy losuje inną osobę, dla której przygotowuje prezent.
 
 1. Każda osoba losuje **dokładnie jedną** osobę i jest wylosowana **dokładnie raz**.
 2. Nikt nie losuje samego siebie.
-3. **Grupy zabronione:** osoby z tej samej grupy nie mogą wylosować siebie nawzajem.
-   - Osoba należy do **najwyżej jednej** grupy (pole może być puste = brak ograniczeń).
+3. **Grupy zabronione:** osoby, które mają **choć jedną wspólną grupę**, nie mogą wylosować siebie nawzajem.
+   - Osoba może należeć do **wielu** grup albo do żadnej (puste pole = brak ograniczeń).
 4. **Pary wzajemne** (A → B i jednocześnie B → A) — dozwolone domyślnie,
    można je zablokować parametrem przy uruchomieniu.
 5. Wynik **nie musi** tworzyć jednego łańcucha — dopuszczalne jest kilka zamkniętych cykli
@@ -30,7 +30,7 @@ Wszystkie pliki: **CSV**, separator `;`, kodowanie UTF-8
 
 ```csv
 Imię i nazwisko;Telefon;Grupa
-Anna Kowalska;600111222;Kowalscy
+Anna Kowalska;600111222;Kowalscy, Praca
 Piotr Kowalski;600333444;Kowalscy
 Ewa Nowak;600555666;
 ```
@@ -38,7 +38,8 @@ Ewa Nowak;600555666;
 - `Imię i nazwisko` — **unikalny identyfikator** osoby; duplikat = błąd pliku.
 - `Telefon` — **wymagany**, przechowywany jako tekst (zachowuje `+48`, zera na początku).
   Może się powtarzać (np. jeden telefon dla pary).
-- `Grupa` — opcjonalna; pusta = brak ograniczeń.
+- `Grupa` — opcjonalna; pusta = brak ograniczeń. Kilka grup rozdziela przecinek;
+  spacje wokół nazw są usuwane, puste nazwy (np. zbędny przecinek) pomijane.
 - Nazwy kolumn bez względu na wielkość liter; spacje wokół wartości są usuwane;
   puste wiersze są pomijane.
 
@@ -71,7 +72,7 @@ python -m secret_santa check lista.csv wyniki.csv
 ```
 
 `draw`:
-- seed losowy (`random.randrange(2**32)`), chyba że podano `--seed`; zawsze wypisywany i zapisywany w pliku,
+- seed losowy (`secrets.randbelow(2**32)`), chyba że podano `--seed`; zawsze wypisywany i zapisywany w pliku,
 - **odmawia nadpisania** istniejącego pliku wyników; nadpisanie tylko z `--force`.
 
 Błędy (`ValueError` i pochodne, `TooManyAttemptsError`) — sam komunikat, bez tracebacku, kod wyjścia 1.
@@ -79,7 +80,7 @@ Błędy (`ValueError` i pochodne, `TooManyAttemptsError`) — sam komunikat, bez
 `check` weryfikuje, czy:
 - każda osoba z listy losuje dokładnie raz i jest wylosowana dokładnie raz,
 - nikt nie wylosował siebie,
-- nikt nie wylosował osoby ze swojej grupy,
+- nikt nie wylosował osoby, z którą ma wspólną grupę,
 - nie ma par wzajemnych (jeśli metadane wyników mówią, że były zablokowane),
 - w wynikach nie występują osoby spoza listy.
 
@@ -102,12 +103,17 @@ sprawdzamy reguły; powtarzamy, aż wynik będzie poprawny.
 - Reguły są w jednym miejscu: `draw.py` używa `validate_pairs()` z `check.py`.
 - `validate_pairs()` rzuca `InvalidDrawError` (podklasa `ValueError`) przy **pierwszym**
   naruszonym warunku; `draw` łapie tylko ten wyjątek i losuje ponownie.
-- Bezpiecznik: limit prób (domyślnie 1000); po jego przekroczeniu — czytelny błąd.
+- Bezpiecznik: limit prób (domyślnie 100 000); po jego przekroczeniu — czytelny błąd
+  z informacją, że losowanie może być niemożliwe.
 
 **Walidacja przed losowaniem** — od razu po wczytaniu listy odrzucamy przypadki niemożliwe:
 - mniej niż 2 osoby,
 - grupa większa niż połowa wszystkich osób (jej członkowie nie mają komu dawać prezentów),
-- dokładnie 2 osoby przy zakazie par wzajemnych.
+- dokładnie 2 osoby przy zakazie par wzajemnych,
+- osoba, która nie ma ani jednego dozwolonego kandydata (komunikat podaje imię).
+
+Przy wielu grupach to nie wykrywa wszystkiego (np. dwie osoby mają tego samego jedynego
+kandydata) — resztę łapie limit prób.
 
 Uwaga: jedna duża grupa (np. 8 z 20 osób) wymaga średnio setek prób, a grupa równa
 połowie osób — ~185 000. Typowe listy rodzinne: kilkanaście prób.
@@ -121,9 +127,15 @@ def validate_pairs(people: list[Person], pairs: dict[Person, Person], allow_mutu
 class ImpossibleDrawError(ValueError): ...
 class TooManyAttemptsError(Exception): ...
 def validate_feasibility(people: list[Person], allow_mutual: bool) -> None
-def draw(people: list[Person], rng: random.Random, allow_mutual: bool, max_attempts: int = 1000) -> dict[Person, Person]
+def draw(people: list[Person], rng: random.Random, allow_mutual: bool, max_attempts: int = 100_000) -> dict[Person, Person]
 
 # models.py
+@dataclass(frozen=True)
+class Person:
+    name: str
+    phone: str
+    groups: frozenset[str] = frozenset()
+
 @dataclass(frozen=True)
 class DrawResult:
     pairs: dict[Person, Person]
@@ -140,7 +152,7 @@ def read_results(path: Path, people: list[Person]) -> DrawResult
 ## Planowana struktura
 
 ```
-losowanie_swiateczne/
+secret_santa/            # katalog projektu
   secret_santa/
     __main__.py    # punkt wejścia: python -m secret_santa
     models.py      # dataclass Person
@@ -170,7 +182,8 @@ losowanie_swiateczne/
 - [x] 5. Walidacja przed losowaniem + algorytm losowania (`draw.py`) + testy
 - [x] 6. Zapis i odczyt wyników CSV (z metadanymi) + testy w obie strony
 - [x] 7. CLI: `draw` i `check` (działa end-to-end; brak testów CLI)
-- [ ] 8. `README.md`
+- [ ] 8. Wiele grup na osobę (`Person.groups`)
+- [ ] 9. `README.md`
 
 ## Na później
 
@@ -206,3 +219,7 @@ losowanie_swiateczne/
   nie wymaga przepisywania testów.
 - 2026-11-21 — Pary wzajemne sterowane flagą `--bez-par-wzajemnych`;
   `sprawdz` odczytuje to ustawienie z metadanych wyników.
+- 2026-11-24 — Osoba może należeć do wielu grup (`groups: frozenset[str]`), w CSV po przecinku.
+- 2026-11-24 — Walidacja: dodatkowo każda osoba musi mieć choć jednego dozwolonego kandydata;
+  bez pełnego algorytmu skojarzeń (prostota).
+- 2026-11-24 — Domyślny limit prób 100 000 zamiast 1000.
