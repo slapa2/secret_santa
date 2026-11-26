@@ -4,6 +4,8 @@ from collections import Counter
 from .check import InvalidDrawError, validate_pairs
 from .models import Person
 
+DEFAULT_MAX_ATTEMPTS = 100_000
+
 
 class ImpossibleDrawError(ValueError):
     pass
@@ -46,7 +48,12 @@ def validate_feasibility(people: list[Person], allow_mutual: bool) -> None:
             )
 
 
-def draw(people: list[Person], rng: random.Random, allow_mutual: bool, max_attempts: int = 1000) -> dict[Person, Person]:
+def draw(
+    people: list[Person],
+    rng: random.Random,
+    allow_mutual: bool,
+    max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+) -> dict[Person, Person]:
     validate_feasibility(people, allow_mutual)
 
     people_copy = people.copy()
@@ -60,5 +67,7 @@ def draw(people: list[Person], rng: random.Random, allow_mutual: bool, max_attem
         except InvalidDrawError:
             continue
 
-    raise TooManyAttemptsError(f"Max attempts: {max_attempts} was reached")
+    raise TooManyAttemptsError(
+        f"No valid draw found in {max_attempts} attempts - the draw may be impossible with these groups"
+    )
 

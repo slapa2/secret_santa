@@ -1,15 +1,14 @@
-import sys
-import secrets
-import random
 import argparse
+import random
+import secrets
+import sys
 from pathlib import Path
 
-
+from .check import validate_pairs
+from .draw import DEFAULT_MAX_ATTEMPTS, TooManyAttemptsError, draw
+from .models import DrawResult
 from .reader import read_people, read_results
 from .writer import write_results
-from .check import validate_pairs
-from .draw import draw, TooManyAttemptsError
-from .models import DrawResult
 
 
 def parse_args():
@@ -21,7 +20,12 @@ def parse_args():
     parser_draw.add_argument("output_file", type=Path, help="output file path")
     parser_draw.add_argument("-n", "--no-mutual-pairs", action="store_true", help="forbidden A<->B pairs")
     parser_draw.add_argument("-s", "--seed", type=int, default=None, help="RNG seed")
-    parser_draw.add_argument("--max-attempts", type=int, default=1000, help="max draw repetition")
+    parser_draw.add_argument(
+        "--max-attempts",
+        type=int,
+        default=DEFAULT_MAX_ATTEMPTS,
+        help="max draw attempts (default: %(default)s)",
+    )
     parser_draw.add_argument("-f", "--force", action="store_true", help="allow overwrite result file")
 
     parser_check = subparsers.add_parser("check", help="check if results in file are valid")
