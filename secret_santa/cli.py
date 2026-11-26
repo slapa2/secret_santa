@@ -60,7 +60,7 @@ def cli():
 def run_draw(input_file, output_file, seed, no_mutual_pairs, max_attempts, force):
 
     if not force and output_file.is_file():
-        raise ValueError(f"File: 'output_file)' exists! Use --force to overwrite")
+        raise ValueError(f"File: {output_file} exists! Use --force to overwrite")
 
     allow_mutual = not no_mutual_pairs
 
