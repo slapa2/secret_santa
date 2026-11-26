@@ -192,6 +192,9 @@ secret_santa/            # katalog projektu
 
 ### Dług techniczny (świadomie odłożone)
 
+- **Crash:** dodatkowy wiersz z nieznanym losującym w pliku wyników → `check` kończy się
+  `AttributeError` (klucz `None` w `pairs`, komunikat robi `None.name`). Przyczyna: `person_dict.get()` w `read_results`.
+- Metadane wyników: `# seed: abc` → techniczny komunikat z `int()`; `allow_mutual` inne niż `true` po cichu = `false`.
 - `read_results` nie wykrywa nieznanych imion ani powtórzonego losującego
   (błąd i tak wychwyci `validate_pairs`, ale z mniej precyzyjnym komunikatem).
 - Brak testów błędów dla `read_results` (`ReadResultsTest` w `tests/test_reader.py`).
