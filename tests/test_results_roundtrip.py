@@ -26,10 +26,10 @@ CONTENT_AM_TRUE= '\n'.join([
     "Person_4;600000004;Person_1"
 ]) + "\n"
 
-P1 = Person(name="Person_1", phone="600000001", group="group_1")
-P2 = Person(name="Person_2", phone="600000002", group="group_2")
-P3 = Person(name="Person_3", phone="600000003", group="group_3")
-P4 = Person(name="Person_4", phone="600000004", group="group_1")
+P1 = Person(name="Person_1", phone="600000001", groups=frozenset({"group_1"}))
+P2 = Person(name="Person_2", phone="600000002", groups=frozenset({"group_2"}))
+P3 = Person(name="Person_3", phone="600000003", groups=frozenset({"group_3"}))
+P4 = Person(name="Person_4", phone="600000004", groups=frozenset({"group_1"}))
 
 PERSONS = [P1, P2, P3, P4]
 

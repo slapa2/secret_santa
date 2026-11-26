@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class Person:
     name: str
     phone: str
-    group: str | None = None
+    groups: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True)

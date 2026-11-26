@@ -1,19 +1,21 @@
 import unittest
 
-
+from secret_santa.check import InvalidDrawError, validate_pairs
 from secret_santa.models import Person
-from secret_santa.check import validate_pairs, InvalidDrawError
 
-
-p1 = Person(name="Person_1", phone="600000001", group="group_1")
-p2 = Person(name="Person_2", phone="600000002", group="group_2")
-p3 = Person(name="Person_3", phone="600000003", group="group_3")
-p4 = Person(name="Person_4", phone="600000004", group="group_1")
-p5 = Person(name="Person_5", phone="600000005", group=None)
-p6 = Person(name="Person_6", phone="600000006", group=None)
-p7 = Person(name="Person_7", phone="600000007", group=None)
-
-
+p1 = Person(name="Person_1", phone="600000001", groups=frozenset({"group_1"}))
+p2 = Person(name="Person_2", phone="600000002", groups=frozenset({"group_2"}))
+p3 = Person(name="Person_3", phone="600000003", groups=frozenset({"group_3"}))
+p4 = Person(name="Person_4", phone="600000004", groups=frozenset({"group_1"}))
+p5 = Person(name="Person_5", phone="600000005", groups=frozenset())
+p6 = Person(name="Person_6", phone="600000006", groups=frozenset())
+p7 = Person(name="Person_7", phone="600000007", groups=frozenset())
+p8 = Person(
+    name="Person_8", phone="600000008", groups=frozenset({"group_1", "group_2}"})
+)
+p9 = Person(
+    name="Person_9", phone="600000009", groups=frozenset({"group_3", "group_4}"})
+)
 
 
 class CheckTest(unittest.TestCase):
@@ -75,3 +77,17 @@ class CheckTest(unittest.TestCase):
         with self.assertRaisesRegex(InvalidDrawError, f"People not on the list: {p3.name}"):
             validate_pairs(persons, pairs, allow_mutual=True)
 
+    def test_person_with_two_groups_and_person_with_one_of_them_raises(self):
+        persons = [p8, p1, p5]
+        pairs = {p8: p1, p1: p5, p5: p8}
+        with self.assertRaisesRegex(
+            InvalidDrawError, f"{p8.name} and {p1.name} are in the same group"
+        ):
+            validate_pairs(persons, pairs, allow_mutual=True)
+
+    def test_person_with_many_different_groups(self):
+        persons = [p8, p9, p5]
+        pairs = {p8: p9, p9: p5, p5: p8}
+        validate_pairs(persons, pairs, allow_mutual=True)
+
+    # x2. Kilka grup, żadnej wspólnej → poprawnie: p8, p9, p5 w kółku.

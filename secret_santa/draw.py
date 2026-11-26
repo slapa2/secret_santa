@@ -23,12 +23,16 @@ def validate_feasibility(people: list[Person], allow_mutual: bool) -> None:
         raise ImpossibleDrawError("When mutual pairs are forbidden list should have at least 3 people")
 
     # 3. some group is greater than half of people list
-    group_counter = Counter(person.group for person in people if person.group is not None)
-    if not group_counter:
-        return
-    greatest_group, greatest_group_size = group_counter.most_common(1)[0]
-    if greatest_group_size > len(people)/2:
-        raise ImpossibleDrawError(f"Greatest group: {greatest_group} is greater than half of all people")
+    group_counter = Counter()
+    for person in people:
+        for group in person.groups:
+            group_counter[group] += 1
+    if group_counter:
+        greatest_group, greatest_group_size = group_counter.most_common(1)[0]
+        if greatest_group_size > len(people) / 2:
+            raise ImpossibleDrawError(
+                f"Greatest group: {greatest_group} is greater than half of all people"
+            )
 
 
 def draw(people: list[Person], rng: random.Random, allow_mutual: bool, max_attempts: int = 1000) -> dict[Person, Person]:

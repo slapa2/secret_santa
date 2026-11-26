@@ -29,9 +29,9 @@ def validate_pairs(people: list[Person], pairs: dict[Person, Person], allow_mutu
         if giver == receiver:
             raise InvalidDrawError(f"{giver.name} drew themselves")
 
-    # 4. No one selected person from their group
+    # 4. No one selected person from their groups
     for giver, receiver in pairs.items():
-        if giver.group is not None and giver.group == receiver.group:
+        if not giver.groups.isdisjoint(receiver.groups):
             raise InvalidDrawError(f"{giver.name} and {receiver.name} are in the same group")
 
     # 5. If not allow mutual no A<->B pairs

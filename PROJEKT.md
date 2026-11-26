@@ -29,7 +29,7 @@ Wszystkie pliki: **CSV**, separator `;`, kodowanie UTF-8
 ### Lista osób (wejście)
 
 ```csv
-Imię i nazwisko;Telefon;Grupa
+Imię i nazwisko;Telefon;Grupy
 Anna Kowalska;600111222;Kowalscy, Praca
 Piotr Kowalski;600333444;Kowalscy
 Ewa Nowak;600555666;
@@ -38,8 +38,8 @@ Ewa Nowak;600555666;
 - `Imię i nazwisko` — **unikalny identyfikator** osoby; duplikat = błąd pliku.
 - `Telefon` — **wymagany**, przechowywany jako tekst (zachowuje `+48`, zera na początku).
   Może się powtarzać (np. jeden telefon dla pary).
-- `Grupa` — opcjonalna; pusta = brak ograniczeń. Kilka grup rozdziela przecinek;
-  spacje wokół nazw są usuwane, puste nazwy (np. zbędny przecinek) pomijane.
+- `Grupy` — kolumna wymagana, wartość opcjonalna; pusta = brak ograniczeń. Kilka grup rozdziela przecinek;
+  spacje wokół nazw są usuwane, puste nazwy (np. zbędny przecinek) pomijane; wielkość liter nie ma znaczenia.
 - Nazwy kolumn bez względu na wielkość liter; spacje wokół wartości są usuwane;
   puste wiersze są pomijane.
 
@@ -162,7 +162,7 @@ secret_santa/            # katalog projektu
     check.py       # weryfikacja wyników
     cli.py         # argparse, spina wszystko
   tests/
-  przyklad.csv
+  example.csv
   PROJEKT.md
 ```
 
@@ -175,7 +175,7 @@ secret_santa/            # katalog projektu
 
 ## Plan
 
-- [x] 1. Szkielet projektu, `.gitignore`, przykładowy `przyklad.csv`
+- [x] 1. Szkielet projektu, `.gitignore`, przykładowy `example.csv`
 - [x] 2. Model danych `Person`
 - [x] 3. Odczyt listy osób z CSV + walidacja + testy (`tests/test_reader.py`)
 - [x] 4. Weryfikacja wyników (`check.py`) + testy
@@ -223,3 +223,4 @@ secret_santa/            # katalog projektu
 - 2026-11-24 — Walidacja: dodatkowo każda osoba musi mieć choć jednego dozwolonego kandydata;
   bez pełnego algorytmu skojarzeń (prostota).
 - 2026-11-24 — Domyślny limit prób 100 000 zamiast 1000.
+- 2026-11-24 — Kolumna `Grupy` zamiast `Grupa`; nazwy grup bez względu na wielkość liter.

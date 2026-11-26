@@ -2,17 +2,22 @@ import random
 import unittest
 
 from secret_santa.check import validate_pairs
-from secret_santa.draw import ImpossibleDrawError, TooManyAttemptsError, draw, validate_feasibility
+from secret_santa.draw import (
+    ImpossibleDrawError,
+    TooManyAttemptsError,
+    draw,
+    validate_feasibility,
+)
 from secret_santa.models import Person
 
-p1 = Person(name="Person_1", phone="600000001", group="group_1")
-p2 = Person(name="Person_2", phone="600000002", group="group_2")
-p3 = Person(name="Person_3", phone="600000003", group="group_3")
-p4 = Person(name="Person_4", phone="600000004", group="group_1")
-p5 = Person(name="Person_5", phone="600000005", group="group_2")
-p6 = Person(name="Person_6", phone="600000006", group=None)
-p7 = Person(name="Person_7", phone="600000007", group=None)
-p8 = Person(name="Person_8", phone="600000008", group=None)
+p1 = Person(name="Person_1", phone="600000001", groups=frozenset({"group_1"}))
+p2 = Person(name="Person_2", phone="600000002", groups=frozenset({"group_2"}))
+p3 = Person(name="Person_3", phone="600000003", groups=frozenset({"group_3"}))
+p4 = Person(name="Person_4", phone="600000004", groups=frozenset({"group_1"}))
+p5 = Person(name="Person_5", phone="600000005", groups=frozenset({"group_2"}))
+p6 = Person(name="Person_6", phone="600000006", groups=frozenset())
+p7 = Person(name="Person_7", phone="600000007", groups=frozenset())
+p8 = Person(name="Person_8", phone="600000008", groups=frozenset())
 
 
 
@@ -47,7 +52,10 @@ class ValidateFeasibilityTest(unittest.TestCase):
 
     def test_too_large_group_raises(self):
         people = [p1, p2, p4]
-        with self.assertRaisesRegex(ImpossibleDrawError, f"Greatest group: {p1.group} is greater than half of all people"):
+        with self.assertRaisesRegex(
+            ImpossibleDrawError,
+            "Greatest group: group_1 is greater than half of all people",
+        ):
             validate_feasibility(people, allow_mutual=False)
 
     def test_people_without_group_are_not_counted_as_group(self):

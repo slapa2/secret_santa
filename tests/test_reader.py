@@ -2,10 +2,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from secret_santa.reader import read_people
 from secret_santa.models import Person
+from secret_santa.reader import read_people
 
-HEADER = "Imię i nazwisko;Telefon;Grupa\n"
+HEADER = "Imię i nazwisko;Telefon;Grupy\n"
 
 class ReadPeopleTest(unittest.TestCase):
 
@@ -21,11 +21,14 @@ class ReadPeopleTest(unittest.TestCase):
 
     def test_reads_person(self):
         people = self.read(HEADER + "Jan Nowak;600111222;Nowak\n")
-        self.assertEqual(people, [Person("Jan Nowak", "600111222", "Nowak")])
+        self.assertEqual(
+            people, [Person("Jan Nowak", "600111222", frozenset({"nowak"}))]
+        )
 
-    def test_empty_group_becomes_none(self):
+    def test_empty_groups_become_empty_frozenset(self):
         people = self.read(HEADER + "Jan Nowak;600111222;\n")
-        self.assertIsNone(people[0].group)
+        self.assertEqual(people[0].groups, frozenset())
+        self.assertIsInstance(people[0].groups, frozenset)
 
     def test_duplicated_name_raises(self):
         content = HEADER + "Anna;1;\nAnna;2;\n"
@@ -33,18 +36,22 @@ class ReadPeopleTest(unittest.TestCase):
             self.read(content)
 
     def test_missing_column_raises(self):
-        content = "Imię i nazwisko;Grupa\n"
+        content = "Imię i nazwisko;Grupy\n"
         with self.assertRaisesRegex(ValueError, "telefon"):
             self.read(content)
 
     def test_header_ignores_case_and_spaces(self):
-        header = "  Imię i nazwisko ; TELEFON ; Grupa \n"
+        header = "  Imię i nazwisko ; TELEFON ; Grupy \n"
         people = self.read(header + "Jan Nowak;600111222;Nowak\n")
-        self.assertEqual(people, [Person("Jan Nowak", "600111222", "Nowak")])
+        self.assertEqual(
+            people, [Person("Jan Nowak", "600111222", frozenset({"nowak"}))]
+        )
 
     def test_strip_values(self):
         people = self.read(HEADER + " Jan Nowak ; 600111222 ; Nowak \n")
-        self.assertEqual(people, [Person("Jan Nowak", "600111222", "Nowak")])
+        self.assertEqual(
+            people, [Person("Jan Nowak", "600111222", frozenset({"nowak"}))]
+        )
 
     def test_empty_file_raises(self):
         content = ""
@@ -70,29 +77,45 @@ class ReadPeopleTest(unittest.TestCase):
         p1 = "Jan Nowak;600111222;Nowak\n"
         p2 = "Jan Kowalski;600111223;Kowalscy\n"
         people = self.read(HEADER + p1 + "\n" + p2)
-        self.assertEqual(people, [
-            Person("Jan Nowak", "600111222", "Nowak"),
-            Person("Jan Kowalski", "600111223", "Kowalscy")
-        ])
+        self.assertEqual(
+            people,
+            [
+                Person("Jan Nowak", "600111222", frozenset({"nowak"})),
+                Person("Jan Kowalski", "600111223", frozenset({"kowalscy"})),
+            ],
+        )
 
     def test_skip_line_with_empty_columns(self):
         p1 = "Jan Nowak;600111222;Nowak\n"
         p2 = "Jan Kowalski;600111223;Kowalscy\n"
         people = self.read(HEADER + p1 + ";;\n" + ";\n" + p2)
-        self.assertEqual(people, [
-            Person("Jan Nowak", "600111222", "Nowak"),
-            Person("Jan Kowalski", "600111223", "Kowalscy")
-        ])
+        self.assertEqual(
+            people,
+            [
+                Person("Jan Nowak", "600111222", frozenset({"nowak"})),
+                Person("Jan Kowalski", "600111223", frozenset({"kowalscy"})),
+            ],
+        )
 
     def test_duplicated_phone_is_allowed(self):
         p1 = "Jan Nowak;600111222;Nowak\n"
         p2 = "Jan Kowalski;600111222;Kowalscy\n"
         people = self.read(HEADER + p1 + p2)
-        self.assertEqual(people, [
-            Person("Jan Nowak", "600111222", "Nowak"),
-            Person("Jan Kowalski", "600111222", "Kowalscy")
-        ])
+        self.assertEqual(
+            people,
+            [
+                Person("Jan Nowak", "600111222", frozenset({"nowak"})),
+                Person("Jan Kowalski", "600111222", frozenset({"kowalscy"})),
+            ],
+        )
 
     def test_header_only_returns_empty_list(self):
         people = self.read(HEADER + "\n")
         self.assertEqual(people, [])
+
+    def test_person_with_two_groups(self):
+        people = self.read(HEADER + "Jan;600111222;Kowalscy, Praca,,KOWALSCY\n")
+        self.assertEqual(
+            people,
+            [Person("Jan", "600111222", frozenset({"kowalscy", "praca"}))],
+        )

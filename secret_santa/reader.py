@@ -7,7 +7,17 @@ from .writer import GIVER_NAME_COLUMN, RECEIVER_NAME_COLUMN
 
 NAME_COLUMN = "imię i nazwisko"
 PHONE_COLUMN = "telefon"
-GROUP_COLUMN = "grupa"
+GROUP_COLUMN = "grupy"
+
+
+def _parse_groups(value: str | None) -> frozenset[str]:
+    if value is None:
+        return frozenset()
+    return frozenset(
+        cleaned_group
+        for group in value.split(",")
+        if (cleaned_group := group.strip().lower())
+    )
 
 
 def read_people(path: Path) -> list[Person]:
@@ -55,7 +65,7 @@ def read_people(path: Path) -> list[Person]:
                 Person(
                     name=row_data.get(NAME_COLUMN),
                     phone=row_data.get(PHONE_COLUMN),
-                    group=row_data.get(GROUP_COLUMN)
+                    groups=_parse_groups(row_data.get(GROUP_COLUMN)),
                 )
             )
     return persons
@@ -89,6 +99,3 @@ def read_results(path: Path, people: list[Person]) -> DrawResult:
         pairs[person_dict.get(giver)] = person_dict.get(receiver)
 
     return DrawResult(pairs=pairs, seed=seed, allow_mutual=allow_mutual)
-
-
-
