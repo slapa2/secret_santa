@@ -197,8 +197,8 @@ secret_santa/            # katalog projektu
 - Brak testów błędów dla `read_results` (`ReadResultsTest` w `tests/test_reader.py`).
 - `read_results` nie sprawdza nagłówka kolumn w pliku wyników.
 - Brak testów integracyjnych CLI (`draw` → plik → `check`).
-- Kosmetyka CLI: puste `help` dla `draw`, „override” → „overwrite” w komunikacie,
-  zbędne `Path(...)` w `run_draw` (argparse już daje `Path`).
+- Kosmetyka CLI: zbędne `Path(output_file)` w dwóch f-stringach w `run_draw`
+  (argparse już daje `Path`).
 
 ## Dziennik decyzji
 
