@@ -12,10 +12,10 @@ from .writer import write_results
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog="secret_santa")
     subparsers = parser.add_subparsers(dest="command", required=True, help="[draw|check]")
 
-    parser_draw = subparsers.add_parser("draw", help="")
+    parser_draw = subparsers.add_parser("draw", help="draw giver - receiver pairs")
     parser_draw.add_argument("input_file", type=Path, help="input file path")
     parser_draw.add_argument("output_file", type=Path, help="output file path")
     parser_draw.add_argument("-n", "--no-mutual-pairs", action="store_true", help="forbidden A<->B pairs")
@@ -59,8 +59,10 @@ def cli():
 
 def run_draw(input_file, output_file, seed, no_mutual_pairs, max_attempts, force):
 
-    if not force and Path(output_file).is_file():
-        raise ValueError(f"File: '{Path(output_file)}' exists!  Use --force to override")
+    if not force and output_file.is_file():
+        raise ValueError(
+            f"File: '{Path(output_file)}' exists! Use --force to overwrite"
+        )
 
     allow_mutual = not no_mutual_pairs
 
