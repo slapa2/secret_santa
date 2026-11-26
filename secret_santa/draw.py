@@ -1,8 +1,8 @@
 import random
 from collections import Counter
 
+from .check import InvalidDrawError, validate_pairs
 from .models import Person
-from .check import validate_pairs, InvalidDrawError
 
 
 class ImpossibleDrawError(ValueError):
@@ -32,6 +32,17 @@ def validate_feasibility(people: list[Person], allow_mutual: bool) -> None:
         if greatest_group_size > len(people) / 2:
             raise ImpossibleDrawError(
                 f"Greatest group: {greatest_group} is greater than half of all people"
+            )
+
+    # 4. person with no valid candidate
+    for person in people:
+        if not any(
+            other.groups.isdisjoint(person.groups)
+            for other in people
+            if other != person
+        ):
+            raise ImpossibleDrawError(
+                f"Person {person.name} has no valid candidate to draw"
             )
 
 

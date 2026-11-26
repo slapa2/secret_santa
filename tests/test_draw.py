@@ -18,6 +18,11 @@ p5 = Person(name="Person_5", phone="600000005", groups=frozenset({"group_2"}))
 p6 = Person(name="Person_6", phone="600000006", groups=frozenset())
 p7 = Person(name="Person_7", phone="600000007", groups=frozenset())
 p8 = Person(name="Person_8", phone="600000008", groups=frozenset())
+p9 = Person(
+    name="Person_9",
+    phone="600000009",
+    groups=frozenset({"group_1", "group_2", "group_3"}),
+)
 
 
 
@@ -65,6 +70,13 @@ class ValidateFeasibilityTest(unittest.TestCase):
     def test_nobody_in_group_is_feasible(self):
         people = [p6, p7, p8]
         validate_feasibility(people, allow_mutual=False)
+
+    def test_person_without_valid_candidate_raises(self):
+        people = [p9, p1, p2, p3]
+        with self.assertRaisesRegex(
+            ImpossibleDrawError, f"Person {p9.name} has no valid candidate to draw"
+        ):
+            validate_feasibility(people, allow_mutual=False)
 
 
 class DrawTest(unittest.TestCase):
