@@ -124,10 +124,11 @@ class InvalidDrawError(ValueError): ...
 def validate_pairs(people: list[Person], pairs: dict[Person, Person], allow_mutual: bool) -> None
 
 # draw.py
+DEFAULT_MAX_ATTEMPTS = 100_000   # używane też jako domyślna wartość w CLI
 class ImpossibleDrawError(ValueError): ...
 class TooManyAttemptsError(Exception): ...
 def validate_feasibility(people: list[Person], allow_mutual: bool) -> None
-def draw(people: list[Person], rng: random.Random, allow_mutual: bool, max_attempts: int = 100_000) -> dict[Person, Person]
+def draw(people: list[Person], rng: random.Random, allow_mutual: bool, max_attempts: int = DEFAULT_MAX_ATTEMPTS) -> dict[Person, Person]
 
 # models.py
 @dataclass(frozen=True)
@@ -155,7 +156,7 @@ def read_results(path: Path, people: list[Person]) -> DrawResult
 secret_santa/            # katalog projektu
   secret_santa/
     __main__.py    # punkt wejścia: python -m secret_santa
-    models.py      # dataclass Person
+    models.py      # dataclassy Person i DrawResult
     reader.py      # odczyt listy osób i wyników z CSV + walidacja
     writer.py      # zapis wyników do CSV
     draw.py        # algorytm losowania
@@ -182,7 +183,7 @@ secret_santa/            # katalog projektu
 - [x] 5. Walidacja przed losowaniem + algorytm losowania (`draw.py`) + testy
 - [x] 6. Zapis i odczyt wyników CSV (z metadanymi) + testy w obie strony
 - [x] 7. CLI: `draw` i `check` (działa end-to-end; brak testów CLI)
-- [ ] 8. Wiele grup na osobę (`Person.groups`)
+- [x] 8. Wiele grup na osobę (`Person.groups`) + testy
 - [ ] 9. `README.md`
 
 ## Na później
@@ -224,3 +225,5 @@ secret_santa/            # katalog projektu
   bez pełnego algorytmu skojarzeń (prostota).
 - 2026-11-24 — Domyślny limit prób 100 000 zamiast 1000.
 - 2026-11-24 — Kolumna `Grupy` zamiast `Grupa`; nazwy grup bez względu na wielkość liter.
+- 2026-11-26 — Domyślny limit prób jako stała `DEFAULT_MAX_ATTEMPTS` w `draw.py` — jedno źródło prawdy dla funkcji i CLI.
+- 2026-11-26 — Wiele grup na osobę gotowe (testy sprawdzone mutacjami: zepsucie `isdisjoint`, `split`, `strip` jest wykrywane).
