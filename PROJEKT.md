@@ -184,7 +184,7 @@ secret_santa/            # katalog projektu
 - [x] 6. Zapis i odczyt wyników CSV (z metadanymi) + testy w obie strony
 - [x] 7. CLI: `draw` i `check` (działa end-to-end; brak testów CLI)
 - [x] 8. Wiele grup na osobę (`Person.groups`) + testy
-- [ ] 9. `README.md`
+- [x] 9. `README.md`
 
 ## Na później
 
